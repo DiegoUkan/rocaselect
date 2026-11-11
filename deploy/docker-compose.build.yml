@@ -1,0 +1,12 @@
+# Roca Select — Opção 2 (com terminal/SSH no servidor)
+# Na pasta deploy/ do servidor:  docker compose -f docker-compose.build.yml up -d --build
+# Use esta OU a Opção 1 (docker-compose.yml), não as duas: o nome do container é o mesmo.
+name: rocaselect
+services:
+  rocaselect:
+    build: .
+    image: rocaselect:latest
+    container_name: rocaselect
+    restart: unless-stopped
+    ports:
+      - "8090:80"

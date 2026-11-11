@@ -1,0 +1,58 @@
+# Roca Select — app para o CasaOS (recomendado)
+#
+# Baixa o site direto do GitHub (DiegoUkan/rocaselect, branch main) toda vez
+# que o container inicia. Para atualizar: faça push no GitHub e reinicie o app.
+# Se o GitHub estiver fora do ar, continua servindo a última cópia baixada.
+#
+# CasaOS: App Store > "+" (Custom Install) > Importar > cole este arquivo > Instalar.
+# Acesse: http://IP-DO-SERVIDOR:8090  (para outra porta, troque 8090 nos dois lugares)
+name: rocaselect
+services:
+  rocaselect:
+    image: nginx:1.27-alpine
+    container_name: rocaselect
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    volumes:
+      - /DATA/AppData/rocaselect/site:/usr/share/nginx/html
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        wget -q -O /tmp/index.html https://raw.githubusercontent.com/DiegoUkan/rocaselect/main/deploy/site/index.html
+        && mv /tmp/index.html /usr/share/nginx/html/index.html
+        || echo "Aviso: GitHub inacessivel, usando a copia salva";
+        wget -q -O /tmp/default.conf https://raw.githubusercontent.com/DiegoUkan/rocaselect/main/deploy/nginx/default.conf
+        && mv /tmp/default.conf /etc/nginx/conf.d/default.conf
+        || echo "Aviso: usando a config padrao do nginx";
+        exec /docker-entrypoint.sh nginx -g 'daemon off;'
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    x-casaos:
+      ports:
+        - container: "80"
+          description:
+            en_us: Web UI
+      volumes:
+        - container: /usr/share/nginx/html
+          description:
+            en_us: Cópia local do site (baixada do GitHub)
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+    - arm
+  main: rocaselect
+  category: Utilities
+  title:
+    en_us: Roca Select
+  tagline:
+    en_us: Briefing e protótipo do portal Roca Select
+  description:
+    en_us: Página estática (nginx) com o briefing e o protótipo navegável do portal de saldos Roca Select. O conteúdo vem do GitHub DiegoUkan/rocaselect.
+  index: /
+  port_map: "8090"

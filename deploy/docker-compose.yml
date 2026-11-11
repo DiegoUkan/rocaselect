@@ -1,0 +1,50 @@
+# Roca Select — servidor para CasaOS (Opção 2, envio manual do index.html)
+# Prefira o casaos.yml, que baixa o site do GitHub sozinho.
+#
+# 1. No app "Files" do CasaOS, crie a pasta /DATA/AppData/rocaselect/site
+#    e envie para ela o arquivo deploy/site/index.html.
+# 2. No CasaOS: App Store > "+" (Custom Install / Instalar app personalizado)
+#    > botão de importar (canto superior direito) > cole este arquivo > Instalar.
+# 3. Acesse http://IP-DO-SERVIDOR:8090
+#
+# Para usar outra porta, troque o 8090 abaixo (nos dois lugares).
+name: rocaselect
+services:
+  rocaselect:
+    image: nginx:1.27-alpine
+    container_name: rocaselect
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    volumes:
+      - /DATA/AppData/rocaselect/site:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    x-casaos:
+      ports:
+        - container: "80"
+          description:
+            en_us: Web UI
+      volumes:
+        - container: /usr/share/nginx/html
+          description:
+            en_us: Pasta com o index.html do Roca Select
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+    - arm
+  main: rocaselect
+  category: Utilities
+  title:
+    en_us: Roca Select
+  tagline:
+    en_us: Briefing e protótipo do portal Roca Select
+  description:
+    en_us: Página estática (nginx) com o briefing e o protótipo navegável do portal de saldos Roca Select.
+  index: /
+  port_map: "8090"
